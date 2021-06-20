@@ -3,7 +3,8 @@ require './animal.rb'
 
 
 @money = 10_000
-@day = 1
+@wheat = 0
+@day = 0
 @running = true
 
 @animals = []
@@ -23,26 +24,29 @@ end
 def buy_something
   puts 'What would you like to buy? [cow, chicken, pig]'
   input = gets.chomp.downcase
+  animal = nil
   case input
   when 'cow'
-    @money -= 400
-    @animals << 'cow'
+    animal = Animal.new(type: :cow, cost: 400, name: "Bessie", day_bought: @day)
   when 'chicken'
-    @money -= 100
-    @animals << 'Chicken'
+    animal = Animal.new(type: :chicken, cost: 100, name: "Ester", day_bought: @day)
   when 'pig'
-    @money -= 250
-    @animals << 'Pig'
+    animal = Animal.new(type: :pig, cost: 250, name: "Porky", day_bought: @day)
   end
+  @money -= animal.cost
+  @animals << animal
 end
 
 def calculate_money
   new_money = 0
   for animal in @animals
-    case animal
-    when 'cow'
+    case animal.type
+    when :cow
       puts "Cow milked for $10"
       new_money += 10
+    when :chicken
+      puts "Chicken eggs sell for 50 cents"
+      new_money += 0.5
     end
   end
   puts "You gained #{new_money}"
@@ -50,8 +54,9 @@ def calculate_money
 end
 
 def main
+  month_length = 3.0
   while @running
-
+    puts "Welcome to day #{(1 + @day % month_length).to_i} of month #{1 + (@day / month_length).floor}."
     puts 'What would you like to do? [buy, status, wait, exit]'
 
     input = gets.chomp.downcase
@@ -60,19 +65,22 @@ def main
     when 'buy'
       buy_something
     when 'status'
-      print_status
+      print_status   
+    when 'wait'
+      wait  
     when 'exit'
-      @running = false
+      @running = false  
     end
-
-    calculate_money
-     
-    @day += 1 
+    
   end
 end
+
 def wait
-  @day += 1  
+  @day += 1 
+
+  calculate_money
 end
+
 
 main
 #a = Animal.new
