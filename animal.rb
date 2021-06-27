@@ -7,7 +7,7 @@ class Animal
     @type = type
   end
 
-  def to_s
-    "#{@type} named #{@name}"
+  def print (today)
+    "#{@type} named #{@name} age: #{today-@day_bought}"
   end
 end
