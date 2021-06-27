@@ -2,14 +2,13 @@ require './animal.rb'
 
 # TODO
 
-# grain, grain_seeds, feed
 # fruit trees
 # more plants
 
-# animals need to eat
-# how much feed each type of animals need
+# different seasons
 
-# sell pig but only after 10 days for money
+
+# sell pig but only after 10 or more days for money
 
 # tornados that can carry off chickens and some plants
 # hurricanes that can carry off all types of animals and plants
@@ -26,14 +25,15 @@ LOAN_TERM = 12
 @loan = 0
 
 @money = 0
-@feed = 100
+@wheat = 50
 @day = 0
 @running = true
 @animals = []
 
 def print_status
-  puts "You have $#{@money}"
   puts "It is day number #{@day}"
+  puts "You have $#{@money}"
+  puts "You have #{@wheat} wheat"
   if @animals.size < 1
     puts 'You have no animals.'
   else
@@ -44,12 +44,22 @@ def print_status
 end
 
 def buy_something
-  puts 'What would you like to buy? [animal, plant]'
+  puts 'What would you like to buy? [animal, wheat]'
   input = gets.chomp.downcase
   case input
   when 'animal'
     buy_animal
+  when 'wheat'
+    buy_wheat
   end
+end
+
+def buy_wheat
+  puts 'How much wheat would you like to buy?'
+  input = gets.chomp.to_i
+  @wheat += input
+  @money -= input*2
+  puts "You bought #{input} wheat for $#{input*2}"
 end
 
 def buy_animal
@@ -120,7 +130,7 @@ def main
     when 'status'
       print_status
     when 'wait'
-      wait
+      do_end_of_day_things
     when 'exit'
       @running = false
     end
@@ -144,14 +154,56 @@ def pay_loan
   puts "Your loan payment of $#{payment.round(2)} has been applied."
 end
 
-def wait
-  @day += 1
-  calculate_money
-  if @day % DAYS_IN_MONTH == 0
-    pay_loan
+
+# for each animal, feed it from @wheat
+# if there isn't enough wheat ... 
+def feed_animals
+  @animals.each do |a|
+    if @wheat > 0
+      a.feed
+      @wheat -= 1
+    end
   end
+end
+
+def do_animal_day_things
+  @animals.each do |a|
+    a.do_end_of_day_things
+  end
+end
+
+
+def harvest_wheat
 
 end
 
+def do_monthly_things
+  return unless @day % DAYS_IN_MONTH == 0
+  
+  harvest_wheat
+  pay_loan
+end
+
+
+def do_end_of_day_things
+  @day += 1
+  
+  feed_animals
+  do_animal_day_things
+  
+  calculate_money
+
+  do_monthly_things
+
+  money_check
+end
+
+
+def money_check
+  if @money < 0
+    puts "You went broke. Bandits took over your farm and forced you to work for them. Then you died of a sudden heart attack. Too bad. If you were still alive, you would have been very proud of your animals because they went on to rule the world."
+    @running = false
+  end
+end
+
 main
-# a = Animal.new
