@@ -23,7 +23,8 @@ class Animal
 
   def do_end_of_day_things
     if @hunger_level >= TOO_HUNGRY_IM_DEAD
-      puts "#{@name} died of hunger"
+      puts "!!!!!! #{@name} died of hunger!!!!!!!"
+      return :died
     end
 
     # get hungry
