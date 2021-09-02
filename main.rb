@@ -1,4 +1,6 @@
 require './animal.rb'
+require 'rainbow/refinement'
+using Rainbow
 
 # TODO
 
@@ -30,7 +32,7 @@ LOAN_TERM = 12
 @animals = []
 
 def print_status
-  puts "======It is day number #{@day}======"
+  puts "It is day number #{@day}"
   puts "You have $#{@money.round(2)}"
   puts "You have #{@wheat} wheat"
   if @animals.size < 1
@@ -42,8 +44,12 @@ def print_status
   end
 end
 
+def underline_first(word)
+  word.slice(0).underline + word[1..-1]
+end
+
 def buy_something
-  puts 'What would you like to buy? [animal, wheat]'
+  puts "What would you like to buy? [#{underline_first("animal")}, #{underline_first("wheat")}]"
   input = gets.chomp.downcase
   case input
   when 'animal', 'a'
@@ -128,7 +134,7 @@ end
 def main
   new_loan
   while @running
-    puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}."
+    puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
     puts 'What would you like to do? [buy, status, wait, exit]'
 
     input = gets.chomp.downcase
