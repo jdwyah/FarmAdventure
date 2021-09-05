@@ -1,25 +1,24 @@
+require 'rainbow/refinement'
+using Rainbow
 require './animal.rb'
 
 # TODO
 
 # fruit trees
 # more plants
-
 # different seasons
-
 # sell pig but only after 10 or more days for money
-
 # tornados that can carry off chickens and some plants
-# hurricanes that can carry off all types of animals and plants
-
+# hurricanes that can carry off all types of animals     and plants
 # plague that kills all of one type of animal
 # old age killing animals
+# saved games
+# multiple years
 
-# invest in barn and coop
-DAYS_IN_MONTH = 2
+DAYS_IN_MONTH = 28
 INTEREST_RATE = 6
 LOAN_TERM = 12
-
+COST_OF_WHEAT = 4
 @original_loan = 0
 @loan = 0
 
@@ -30,7 +29,7 @@ LOAN_TERM = 12
 @animals = []
 
 def print_status
-  puts "======It is day number #{@day}======"
+  puts "It is day number #{@day}"
   puts "You have $#{@money.round(2)}"
   puts "You have #{@wheat} wheat"
   if @animals.size < 1
@@ -42,8 +41,12 @@ def print_status
   end
 end
 
+def underline_first(word)
+  word.slice(0).underline + word[1..-1]
+end
+
 def buy_something
-  puts 'What would you like to buy? [animal, wheat]'
+  puts "What would you like to buy? [#{underline_first("animal")}, #{underline_first("wheat")}]"
   input = gets.chomp.downcase
   case input
   when 'animal', 'a'
@@ -57,8 +60,20 @@ def buy_wheat
   puts 'How much wheat would you like to buy?'
   input = gets.chomp.to_i
   @wheat += input
-  @money -= input*2
-  puts "You bought #{input} wheat for $#{input*2}"
+  @money -= input*COST_OF_WHEAT
+  puts "You bought #{input} wheat for $#{input*COST_OF_WHEAT}"
+end
+
+def sell_something
+  if @animals.size < 1
+    puts 'You have no animals.'
+  else
+    puts "Here are your animals:"
+    @animals.each do |animal|
+      puts "#{animal.print(@day)}"
+    end
+  end
+  puts 'Who would you like to sell?'
 end
 
 def generate_name
@@ -102,14 +117,14 @@ def calculate_money
   @animals.each do |animal|
     case animal.type
     when :cow
-      puts 'Cow milked for $10'
-      new_money += 10
+      puts 'Cow milked for $12'
+      new_money += 12
     when :chicken
-      puts 'Chicken eggs sell for 50 cents'
-      new_money += 0.5
+      puts 'Chicken eggs sell for 79 cents'
+      new_money += 0.79
     when :truffle_finding_pig
-      puts 'truffles sell for $100'
-      new_money += 100
+      puts 'truffles sell for $114'
+      new_money += 114
     end
   end
   puts "You gained #{new_money} but the taxes ruduced 12%, which is #{(new_money*0.12).round(2)},so you gained #{(new_money*0.88).round(2)}"
@@ -128,16 +143,18 @@ end
 def main
   new_loan
   while @running
-    puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}."
-    puts 'What would you like to do? [buy, status, wait, exit]'
+    puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
+    puts "What would you like to do? [#{underline_first("buy")}, #{underline_first("info")}, #{underline_first("wait")}, #{underline_first("exit")}]"
 
     input = gets.chomp.downcase
 
     case input
     when 'buy', 'b'
       buy_something
-    when 'status', 's'
+    when 'info', 'i'
       print_status
+    when 'sell', 's'
+      sell_something
     when 'wait', 'w'
       do_end_of_day_things
     when 'exit', 'e'

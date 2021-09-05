@@ -1,3 +1,5 @@
+
+using Rainbow
 class Animal
   attr_reader :cost, :name, :day_bought, :type, :hunger_level
 
@@ -18,12 +20,12 @@ class Animal
   def feed
     # eat food
     @hunger_level -= 1
-    puts "feeding cow"
+    puts "Your cow #{@name} ate 1 wheat."
   end
 
   def do_end_of_day_things
     if @hunger_level >= TOO_HUNGRY_IM_DEAD
-      puts "!!!!!! #{@name} died of hunger!!!!!!!"
+      puts "!!!!!! #{@name} died of hunger!!!!!!!".red
       return :died
     end
 
