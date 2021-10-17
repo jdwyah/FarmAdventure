@@ -1,5 +1,6 @@
 require 'rainbow/refinement'
 require './animal.rb'
+require 'rainbow/refinement'
 using Rainbow
 
 # TODO
@@ -40,8 +41,13 @@ def print_status
   end
 end
 
+<<<<<<< HEAD
 def underline_first(word, count=1)
   word.slice(0,count).underline + word[count..-1]
+=======
+def underline_first(word)
+  word.slice(0).underline + word[1..-1]
+>>>>>>> origin/master
 end
 
 def buy_something
@@ -169,6 +175,7 @@ def main
   new_loan
   while @running
     puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
+
     puts " Money $#{@money.round(2)}".green
     puts " Wheat #{@wheat}".yellow
     puts " Animals #{@animals.size}".blue
