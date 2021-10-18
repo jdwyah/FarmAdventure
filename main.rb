@@ -41,13 +41,8 @@ def print_status
   end
 end
 
-<<<<<<< HEAD
 def underline_first(word, count=1)
   word.slice(0,count).underline + word[count..-1]
-=======
-def underline_first(word)
-  word.slice(0).underline + word[1..-1]
->>>>>>> origin/master
 end
 
 def buy_something
@@ -96,9 +91,9 @@ def sell_something
 end
 
 def generate_name
-  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie"]
+  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie", "Bobbie", "Fred"]
   
-  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington"]
+  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington", "McDonald"]
 
   name = "#{firsts.sample} #{lasts.sample}"
   name
