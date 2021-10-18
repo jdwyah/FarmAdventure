@@ -1,32 +1,29 @@
+require 'rainbow/refinement'
 require './animal.rb'
 require 'rainbow/refinement'
 using Rainbow
 
 # TODO
-
+# sell pig but only after 10 or more days for money
 # fruit trees
 # more plants
-
 # different seasons
-
-# sell pig but only after 10 or more days for money
-
 # tornados that can carry off chickens and some plants
-# hurricanes that can carry off all types of animals and plants
-
+# hurricanes that can carry off all types of animals     and plants
 # plague that kills all of one type of animal
 # old age killing animals
+# saved games
+# multiple years
 
-# invest in barn and coop
-DAYS_IN_MONTH = 2
+DAYS_IN_MONTH = 28
 INTEREST_RATE = 6
 LOAN_TERM = 12
-
+COST_OF_WHEAT = 4
 @original_loan = 0
 @loan = 0
 
 @money = 0
-@wheat = 10
+@wheat = 1
 @day = 0
 @running = true
 @animals = []
@@ -44,8 +41,8 @@ def print_status
   end
 end
 
-def underline_first(word)
-  word.slice(0).underline + word[1..-1]
+def underline_first(word, count=1)
+  word.slice(0,count).underline + word[count..-1]
 end
 
 def buy_something
@@ -63,21 +60,47 @@ def buy_wheat
   puts 'How much wheat would you like to buy?'
   input = gets.chomp.to_i
   @wheat += input
-  @money -= input*2
-  puts "You bought #{input} wheat for $#{input*2}"
+  @money -= input*COST_OF_WHEAT
+  puts "You bought #{input} wheat for $#{input*COST_OF_WHEAT}"
+end
+
+def sell_something
+  if @animals.size < 1
+    puts 'You have no animals.'
+    return
+  else
+    puts "Here are your animals:"
+    
+    @animals.each_with_index do |animal, count|
+      puts "##{count}) #{animal.print(@day)} and will sell for $#{animal.sell_price(@day)}"  
+    end
+  end
+  puts 'Who would you like to sell (number)?'
+  
+  input = gets.chomp.downcase.to_i
+  to_sell = @animals[input]
+  
+  sell_price = to_sell.sell_price(@day)
+
+  puts "ok, selling #{to_sell.print(@day)} for $#{sell_price}"
+
+  @money += sell_price
+
+  @animals.delete(to_sell)
+
 end
 
 def generate_name
-  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie"]
+  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie", "Bobbie", "Fred"]
   
-  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington"]
+  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington", "McDonald"]
 
   name = "#{firsts.sample} #{lasts.sample}"
   name
 end
 
 def buy_animal
-  puts 'What would you like to buy? [cow (400), chicken (100), normal_pig (250), truffle_finding_pig (4000)]'
+  puts "What would you like to buy? [#{underline_first("cow")} (400), #{underline_first("chicken",2)} (100), #{underline_first("pig")} (250), #{underline_first("truffle_finding_pig")} (4000)]"
   input = gets.chomp.downcase
   animal = nil
   case input
@@ -87,7 +110,7 @@ def buy_animal
     animal = Animal.new(type: :chicken, cost: 100, name: generate_name, day_bought: @day)
   when 'pig', 'p'
     animal = Animal.new(type: :pig, cost: 250, name: generate_name, day_bought: @day)
-  when 'truffle_finding_pig', 'tfp'
+  when 'truffle_finding_pig', 't'
     puts 'Are you sure you want to buy a truffle finding pig? They cost a lot.'
     input = gets.chomp.downcase
     animal = nil
@@ -108,14 +131,14 @@ def calculate_money
   @animals.each do |animal|
     case animal.type
     when :cow
-      puts 'Cow milked for $10'
-      new_money += 10
+      puts 'Cow milked for $12'
+      new_money += 12
     when :chicken
-      puts 'Chicken eggs sell for 50 cents'
-      new_money += 0.5
+      puts 'Chicken eggs sell for 79 cents'
+      new_money += 0.79
     when :truffle_finding_pig
-      puts 'truffles sell for $100'
-      new_money += 100
+      puts 'truffles sell for $114'
+      new_money += 114
     end
   end
   puts "You gained #{new_money} but the taxes ruduced 12%, which is #{(new_money*0.12).round(2)},so you gained #{(new_money*0.88).round(2)}"
@@ -124,7 +147,19 @@ def calculate_money
 end
 
 def new_loan
-  puts "Welcome to FarmAdventure. To get started you will have to take out a loan. The intrest rate is #{INTEREST_RATE}% over #{LOAN_TERM} months. How much would you like to take out?"
+  puts <<~EOS
+  Welcome to 
+
+ #######                            #                                                           
+ #         ##   #####  #    #      # #   #####  #    # ###### #    # ##### #    # #####  ###### 
+ #        #  #  #    # ##  ##     #   #  #    # #    # #      ##   #   #   #    # #    # #      
+ #####   #    # #    # # ## #    #     # #    # #    # #####  # #  #   #   #    # #    # #####  
+ #       ###### #####  #    #    ####### #    # #    # #      #  # #   #   #    # #####  #      
+ #       #    # #   #  #    #    #     # #    #  #  #  #      #   ##   #   #    # #   #  #      
+ #       #    # #    # #    #    #     # #####    ##   ###### #    #   #    ####  #    # ###### 
+                                                                                                                                                                       
+  To get started you will have to take out a loan. The intrest rate is #{INTEREST_RATE}% over #{LOAN_TERM} months. How much would you like to take out?"
+  EOS
   @loan = gets.chomp.to_f
   @money = @loan
   @original_loan = @loan
@@ -135,19 +170,28 @@ def main
   new_loan
   while @running
     puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
-    puts 'What would you like to do? [buy, status, wait, exit]'
+
+    puts " Money $#{@money.round(2)}".green
+    puts " Wheat #{@wheat}".yellow
+    puts " Animals #{@animals.size}".blue
+
+    puts "What would you like to do? [#{underline_first("buy")}, #{underline_first("sell")} #{underline_first("info")}, #{underline_first("wait")}, #{underline_first("exit")}]"
 
     input = gets.chomp.downcase
 
     case input
     when 'buy', 'b'
       buy_something
-    when 'status', 's'
+    when 'info', 'i'
       print_status
+    when 'sell', 's'
+      sell_something
     when 'wait', 'w'
       do_end_of_day_things
     when 'exit', 'e'
       @running = false
+    else
+      puts "Hmmm, not sure what you meant."
     end
 
   end
@@ -174,10 +218,8 @@ end
 # if there isn't enough wheat ... 
 def feed_animals
   @animals.each do |a|
-    if @wheat > 0
-      a.feed
-      @wheat -= 1
-    end
+    eaten = a.feed(@wheat)
+    @wheat -= eaten
   end
 end
 
@@ -205,21 +247,36 @@ end
 
 def do_end_of_day_things
   @day += 1
+
   
-  feed_animals
   do_animal_day_things
-  
+  do_natural_disasters
   calculate_money
-
   do_monthly_things
-
   money_check
+  feed_animals
 end
 
+def do_natural_disasters
+ if 0 == rand(3)
+   eaten_chicken = @animals.select{|a| a.type == :chicken}.first
+   unless eaten_chicken.nil?
+    puts "A fox ate #{eaten_chicken.name} 😞".red.bright
+    @animals.delete(eaten_chicken)
+   end
+ end
+
+ if 0 == rand(5)
+  tornado_desired_amount = rand(20)
+  carried_away_wheat = [tornado_desired_amount, @wheat].min
+  puts "a tornado happened during the night and carryed away #{carried_away_wheat} wheat".red.bright
+  @wheat -= carried_away_wheat
+ end
+end
 
 def money_check
   if @money < 0
-    puts "You went broke. Bandits took over your farm and forced you to work for them. Then you died of a sudden heart attack. Too bad. If you were still alive, you would have been very proud of your animals because they went on to rule the world."
+    puts "You went broke. Then you died of a sudden heart attack. Too bad. If you were still alive, you would have been very proud of your animals because they went on to rule the world."
     @running = false
   end
 end
