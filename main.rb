@@ -4,34 +4,39 @@ require 'rainbow/refinement'
 using Rainbow
 
 # TODO
-# sell pig but only after 10 or more days for money
+# DONE sell pigs for more money
+# limit of 500 on first loan
+# truffle pigs shoudl find truffles
 # fruit trees
 # more plants
 # different seasons
-# tornados that can carry off chickens and some plants
-# hurricanes that can carry off all types of animals     and plants
+# DONE tornados that can carry off chickens and some plants
+# DONE hurricanes that can carry off all types of animals     and plants
 # plague that kills all of one type of animal
 # old age killing animals
-# saved games
 # multiple years
 
 DAYS_IN_MONTH = 28
 INTEREST_RATE = 6
 LOAN_TERM = 12
 COST_OF_WHEAT = 4
+SILO_COST = 120
+
 @original_loan = 0
 @loan = 0
 
 @money = 0
-@wheat = 1
+@wheat = 10
 @day = 0
 @running = true
 @animals = []
+@has_a_silo = false
 
 def print_status
   puts "It is day number #{@day}"
   puts "You have $#{@money.round(2)}"
-  puts "You have #{@wheat} wheat"
+  puts "You have #{@wheat} wheat #{if @has_a_silo; puts 'stored in a silo' end}"
+
   if @animals.size < 1
     puts 'You have no animals.'
   else
@@ -46,13 +51,15 @@ def underline_first(word, count=1)
 end
 
 def buy_something
-  puts "What would you like to buy? [#{underline_first("animal")}, #{underline_first("wheat")}]"
+  puts "What would you like to buy? [#{underline_first("animal")}, #{underline_first("wheat")}, #{underline_first("silo")}]"
   input = gets.chomp.downcase
   case input
   when 'animal', 'a'
     buy_animal
   when 'wheat', 'w'
     buy_wheat
+  when 'silo', 's'
+    buy_silo
   end
 end
 
@@ -62,6 +69,14 @@ def buy_wheat
   @wheat += input
   @money -= input*COST_OF_WHEAT
   puts "You bought #{input} wheat for $#{input*COST_OF_WHEAT}"
+end
+
+def buy_silo
+  if @money > SILO_COST
+    @money -= SILO_COST
+    @has_a_silo = true
+    puts "Marnie stopped by and built you your silo"
+  end
 end
 
 def sell_something
@@ -158,21 +173,27 @@ def new_loan
  #       #    # #   #  #    #    #     # #    #  #  #  #      #   ##   #   #    # #   #  #      
  #       #    # #    # #    #    #     # #####    ##   ###### #    #   #    ####  #    # ###### 
                                                                                                                                                                        
-  To get started you will have to take out a loan. The intrest rate is #{INTEREST_RATE}% over #{LOAN_TERM} months. How much would you like to take out?"
+  To get started you will have to take out a loan. The intrest rate is #{INTEREST_RATE}% over #{LOAN_TERM} months. You can take up to $500, how much would you like to take out?"
   EOS
   @loan = gets.chomp.to_f
-  @money = @loan
-  @original_loan = @loan
+  if @loan > 500
+    puts "That's more than $500!".red
+    new_loan
+  else
+    @money = @loan
+    @original_loan = @loan
+  end
 end
 
 
 def main
   new_loan
+  
   while @running
     puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
 
     puts " Money $#{@money.round(2)}".green
-    puts " Wheat #{@wheat}".yellow
+    puts " Wheat #{@wheat} #{if @has_a_silo; "stored in a silo" end}".yellow
     puts " Animals #{@animals.size}".blue
 
     puts "What would you like to do? [#{underline_first("buy")}, #{underline_first("sell")} #{underline_first("info")}, #{underline_first("wait")}, #{underline_first("exit")}]"
@@ -196,6 +217,20 @@ def main
 
   end
 end
+
+def process_cheats
+  if @loan == 1
+
+    @animals << Animal.new(type: :chicken, cost: 100, name: generate_name,day_bought: @day)
+    
+    @animals << Animal.new(type: :cow, cost: 400, name: generate_name, day_bought: @day)
+
+    @animals << Animal.new(type: :pig, cost: 250, name: generate_name, day_bought: @day)
+    
+    @wheat += 50
+  end
+end
+
 
 def pay_loan
   r = (INTEREST_RATE / 12.0 / 100.0)
@@ -266,11 +301,26 @@ def do_natural_disasters
    end
  end
 
- if 0 == rand(5)
-  tornado_desired_amount = rand(20)
+ if 0 == rand(5) 
+  
+  tornado_desired_amount = rand(15)
+
+  if @has_a_silo
+    silo_protected = 10
+  end
+
   carried_away_wheat = [tornado_desired_amount, @wheat].min
-  puts "a tornado happened during the night and carryed away #{carried_away_wheat} wheat".red.bright
-  @wheat -= carried_away_wheat
+
+  carried_away_wheat -= 10 if @has_a_silo
+
+  if carried_away_wheat > 0
+    puts "a tornado happened during the night and carryed away #{carried_away_wheat} wheat".red.bright
+    puts "Your silo protected 10".green.bright
+
+    @wheat -= carried_away_wheat
+  else
+    puts "there wsa a tornado, but your silo saved it all".green.bright
+  end
  end
 end
 
