@@ -58,4 +58,13 @@ class Animal
       age(today) * 2
     end 
   end
+
+  def emoji
+    case @type
+      when :cow then '🐮'
+      when :pig then '🐷'
+      when :chicken then '🐔'
+      else ''
+    end
+  end
 end

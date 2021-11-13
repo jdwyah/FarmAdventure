@@ -4,14 +4,12 @@ require 'rainbow/refinement'
 using Rainbow
 
 # TODO
-# DONE sell pigs for more money
 # limit of 500 on first loan
-# truffle pigs shoudl find truffles
+# truffle pigs should find truffles
 # fruit trees
 # more plants
 # different seasons
-# DONE tornados that can carry off chickens and some plants
-# DONE hurricanes that can carry off all types of animals     and plants
+# hurricanes that can carry off animals and plants
 # plague that kills all of one type of animal
 # old age killing animals
 # multiple years
@@ -19,8 +17,10 @@ using Rainbow
 DAYS_IN_MONTH = 28
 INTEREST_RATE = 6
 LOAN_TERM = 12
-COST_OF_WHEAT = 4
-SILO_COST = 120
+COST_OF_WHEAT = 3
+SILO_COST = 150
+MAYO_MACHINE_COST = 175
+CHICKEN_COOP_COST = 380
 
 @original_loan = 0
 @loan = 0
@@ -72,10 +72,21 @@ def buy_wheat
 end
 
 def buy_silo
-  if @money > SILO_COST
-    @money -= SILO_COST
-    @has_a_silo = true
-    puts "Marnie stopped by and built you your silo"
+  puts "Buy a silo for $#{SILO_COST}? [yes, no]"
+  input = gets.chomp.downcase
+  animal = nil
+  case input
+  when 'yes'
+    if @money > SILO_COST
+      @money -= SILO_COST
+      @has_a_silo = true
+      
+      puts "!!!!!Marnie stopped by and built you your silo!!!!!"
+    else
+      puts "Not eenough money for a silo!!"  
+    end
+  when 'no'
+    puts 'Okay, you will not buy a silo.'
   end
 end
 
@@ -106,25 +117,26 @@ def sell_something
 end
 
 def generate_name
-  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie", "Bobbie", "Fred"]
+  firsts = ["Arnold", "Phylis", "Leopold", "Mortimer", "Dr SnuffSnuff", "Esmerelda", "Gesundheit", "Bessie", "Bobbie", "Fred", "Floppy"]
   
-  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington", "McDonald"]
+  lasts = ["McMickalMick", "O'Rorke", "Smith", "Cow", "Quackerstein", "Schumpeter", "Washington", "McDonald",
+  "Jones"]
 
   name = "#{firsts.sample} #{lasts.sample}"
   name
 end
 
 def buy_animal
-  puts "What would you like to buy? [#{underline_first("cow")} (400), #{underline_first("chicken",2)} (100), #{underline_first("pig")} (250), #{underline_first("truffle_finding_pig")} (4000)]"
+  puts "What would you like to buy? [#{underline_first("cow")} (450), #{underline_first("chicken",2)} (40), #{underline_first("pig")} (275), #{underline_first("truffle_finding_pig")} (4000)]"
   input = gets.chomp.downcase
   animal = nil
   case input
   when 'cow', 'c'
-    animal = Animal.new(type: :cow, cost: 400, name: generate_name, day_bought: @day)
+    animal = Animal.new(type: :cow, cost: 450, name: generate_name, day_bought: @day)
   when 'chicken', 'ch'
-    animal = Animal.new(type: :chicken, cost: 100, name: generate_name, day_bought: @day)
+    animal = Animal.new(type: :chicken, cost: 40, name: generate_name, day_bought: @day)
   when 'pig', 'p'
-    animal = Animal.new(type: :pig, cost: 250, name: generate_name, day_bought: @day)
+    animal = Animal.new(type: :pig, cost: 275, name: generate_name, day_bought: @day)
   when 'truffle_finding_pig', 't'
     puts 'Are you sure you want to buy a truffle finding pig? They cost a lot.'
     input = gets.chomp.downcase
@@ -136,7 +148,7 @@ def buy_animal
       puts 'Okay, you will not buy a truffle finding pig'
     end
   end
-  puts "You bought a #{animal.type} named #{animal.name}"
+  puts "You bought a #{animal.type} named #{animal.name} #{animal.emoji}"
   @money -= animal.cost
   @animals << animal
 end
@@ -149,8 +161,8 @@ def calculate_money
       puts 'Cow milked for $12'
       new_money += 12
     when :chicken
-      puts 'Chicken eggs sell for 79 cents'
-      new_money += 0.79
+      puts 'Chicken eggs sell for 5.79 cents'
+      new_money += 5.79
     when :truffle_finding_pig
       puts 'truffles sell for $114'
       new_money += 114
@@ -293,35 +305,44 @@ def do_end_of_day_things
 end
 
 def do_natural_disasters
- if 0 == rand(3)
-   eaten_chicken = @animals.select{|a| a.type == :chicken}.first
-   unless eaten_chicken.nil?
-    puts "A fox ate #{eaten_chicken.name} 😞".red.bright
-    @animals.delete(eaten_chicken)
-   end
- end
-
- if 0 == rand(5) 
-  
-  tornado_desired_amount = rand(15)
-
-  if @has_a_silo
-    silo_protected = 10
+  if 0 == rand(3)
+    eaten_chicken = @animals.select{|a| a.type == :chicken}.first
+    unless eaten_chicken.nil?
+      puts "🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊"
+      puts "A fox ate #{eaten_chicken.name} 😞".red.bright
+      puts "🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊"
+      @animals.delete(eaten_chicken)
+    end
   end
 
-  carried_away_wheat = [tornado_desired_amount, @wheat].min
+  # a tornado hits with this probability
+  if 0 == rand(2) 
+    
+    # this is how much the tornado wants to take
+    tornado_desired_amount = rand(20) + 1
 
-  carried_away_wheat -= 10 if @has_a_silo
+    #limit tornado to how much wheat we have
+    tornado_desired_amount = [tornado_desired_amount, @wheat].min
 
-  if carried_away_wheat > 0
-    puts "a tornado happened during the night and carryed away #{carried_away_wheat} wheat".red.bright
-    puts "Your silo protected 10".green.bright
+    if @has_a_silo
+      puts "🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️"
+      puts "A tornado happened during the night and would've carried away #{tornado_desired_amount} wheat".red.bright
+      puts "🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️"
 
-    @wheat -= carried_away_wheat
-  else
-    puts "there wsa a tornado, but your silo saved it all".green.bright
+      if tornado_desired_amount > 10
+        carried_away = tornado_desired_amount - 10
+        puts "But it only carried away #{carried_away} because of your silo.".green.bright
+        @wheat -= carried_away
+      else
+        puts "But your silo saved it all.".green.bright
+      end
+    else
+      puts "🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️"
+      puts "A tornado happened during the night carried away #{tornado_desired_amount} wheat".red.bright  
+      puts "🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️🌪️"
+      @wheat -= tornado_desired_amount
+    end
   end
- end
 end
 
 def money_check
