@@ -2,12 +2,14 @@ GEM
   remote: https://rubygems.org/
   specs:
     rainbow (3.0.0)
+    replitdb (0.1.1)
 
 PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
   rainbow (~> 3.0)
+  replitdb (~> 0.1.1)
 
 BUNDLED WITH
    2.2.7

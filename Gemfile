@@ -7,3 +7,5 @@ git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 # gem "rails"
 
 gem "rainbow", "~> 3.0"
+
+gem "replitdb", "~> 0.1.1"
