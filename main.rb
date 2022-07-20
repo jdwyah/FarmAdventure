@@ -11,8 +11,7 @@ visitors += 1
 # TODO
 # 1 Loan day warning
 # Loans : Lots of $ at high rate. Small amount at low rate.
-#0 redo the fox probabilities 
-#2 Buy wheat seed for $1 and 5 days later get a wheat.
+# 2 Buy wheat seed for $1 and 5 days later get a wheat.
 # 3 different seasons
 # 4 old age killing animals
 # 5 fruit trees: question: can animals eat fruit? or they just make $$?
@@ -20,9 +19,7 @@ visitors += 1
 # 7 hurricanes that can carry off animals and plants
 # 8 plague that kills all of one type of animal
 # 9 multiple years/End at day XX and show high score if you want (don't really need)
-DAYS_IN_MONTH = 28
-GAME_LENGTH_IN_DAYS = DAYS_IN_MONTH * 12
-INTEREST_RATE = 6
+@interest_rate = 6
 LOAN_TERM = 12
 COST_OF_WHEAT = 3
 SILO_COST = 150
@@ -98,7 +95,7 @@ def buy_fences
 end
 
 def buy_wheat
-  puts "How much wheat would you like to buy? (It's #{COST_OF_WHEAT} each)"
+  puts "How much wheat would you like to buy? (It's $#{COST_OF_WHEAT} each)"
   input = gets.chomp.to_i
   @wheat += input
   @money -= input * COST_OF_WHEAT
@@ -213,37 +210,101 @@ def calculate_money
   @money += (new_money * 0.88)
 end
 
-def new_loan
+def intro_screen
   puts <<~EOS
      Welcome to 
 
-    #######                            #                                                           
-    #         ##   #####  #    #      # #   #####  #    # ###### #    # ##### #    # #####  ###### 
-    #        #  #  #    # ##  ##     #   #  #    # #    # #      ##   #   #   #    # #    # #      
-    #####   #    # #    # # ## #    #     # #    # #    # #####  # #  #   #   #    # #    # #####  
-    #       ###### #####  #    #    ####### #    # #    # #      #  # #   #   #    # #####  #      
-    #       #    # #   #  #    #    #     # #    #  #  #  #      #   ##   #   #    # #   #  #      
-    #       #    # #    # #    #    #     # #####    ##   ###### #    #   #    ####  #    # ###### 
-                                                                                                                                                                          
-     To get started you will have to take out a loan. The intrest rate is #{INTEREST_RATE}% over #{LOAN_TERM} months. You can take up to $500, how much would you like to take out?"
+    #######                          
+    #         ##   #####  #    #  
+    #        #  #  #    # ##  ##   
+    #####   #    # #    # # ## #   
+    #       ###### #####  #    #   
+    #       #    # #   #  #    #   
+    #       #    # #    # #    #   
   EOS
+  puts <<~EOS
+        #                                                           
+       # #   #####  #    # ###### #    # ##### #    # #####  ###### 
+      #   #  #    # #    # #      ##   #   #   #    # #    # #      
+     #     # #    # #    # #####  # #  #   #   #    # #    # #####  
+     ####### #    # #    # #      #  # #   #   #    # #####  #      
+     #     # #    #  #  #  #      #   ##   #   #    # #   #  #      
+     #     # #####    ##   ###### #    #   #    ####  #    # ###### 
+
+  EOS
+
+end
+
+def pick_game_length
+
+  while @days_in_month.nil?
+    puts "How Long Of A Game Do You Want To Play? [short, medium, long]"
+
+    input = gets.chomp
+    case input
+    when 'short'
+      @days_in_month = 5
+      puts "Ok, you will have a short, 70-day game."
+    when 'medium'
+      @days_in_month = 10
+      puts "Ok, one medium game, coming right up. It will be 120 days long."
+    when 'long'
+      @days_in_month = 28
+      puts "A long game? Ok, it will be 336 days long."
+    else
+      puts "What? I didn't get that."
+    end
+  end
+  
+  @game_length_in_days = @days_in_month * 12
+end
+
+def new_loan  
   puts "You are farmer ##{@db.get('visitors')}"
-  @loan = gets.chomp.to_f
-  if @loan > 500
-    puts "That's more than $500!".red
+  
+  loan_choices = [
+    {amount: 300,      
+     interest: 1,
+    },
+    {amount: 500,
+     interest: 6,
+    },
+    {amount: 1000,
+     interest: 15,
+    },    
+  ]
+  puts "To get started you will have to take out a loan. You have #{loan_choices.size} choices."
+  loan_choices.each do |choice|
+    puts "#{choice[:amount]} at #{choice[:interest]}% interest."
+  end
+  puts "How much would you like to take out?"
+    
+  loan_input = gets.chomp.to_f
+  loan = loan_choices.select{|l| l[:amount] == loan_input}.first
+
+  
+  if loan.nil?
+    puts "No loan is available for that amount.".red
     new_loan
   else
-    @money = @loan
-    @original_loan = @loan
+    @money = loan[:amount]
+    @original_loan = loan[:amount]
+    @interest_rate = loan[:interest]
+
+    puts "You've taken out #{loan[:amount]} at #{loan[:interest]}. Don't forget your monthly loan payments💵💵💵 every #{@days_in_month} days!"
+    
     process_cheats
   end
 end
 
 def main
+  intro_screen
+  pick_game_length
+  print_high_scores
   new_loan
 
   while @running
-    puts "Welcome to day #{(1 + @day % DAYS_IN_MONTH).to_i} of month #{1 + (@day / DAYS_IN_MONTH).floor}.".yellow
+    puts "Welcome to day #{(1 + @day % @days_in_month).to_i} of month #{1 + (@day / @days_in_month).floor}.".yellow
 
     puts " Money $#{@money.round(2)}".green
     puts " Wheat #{@wheat} #{'stored in a silo' if @has_a_silo}".yellow
@@ -273,7 +334,7 @@ end
 
 def process_cheats
   puts "Loan is #{@loan}"
-  if @loan == 1
+  if @loan == 17
 
     @animals << Animal.new(type: :chicken, cost: 100, name: generate_name, day_bought: @day)
 
@@ -283,16 +344,16 @@ def process_cheats
 
     @wheat += 50
   end
-  if @loan == 2
+  if @loan == 2.5
     @db.set('visitors', 0)
-    @db.set('highscores', [])
+    @db.set(highscore_key, [])
     puts 'Highscores cleared'
     @running = false
   end
 end
 
 def pay_loan
-  r = (INTEREST_RATE / 12.0 / 100.0)
+  r = (@interest_rate / 12.0 / 100.0)
 
   top =  (1.0 + r)**LOAN_TERM - 1
   bottom = r * ((1.0 + r)**LOAN_TERM)
@@ -326,17 +387,29 @@ end
 def harvest_wheat; end
 
 def do_monthly_things
-  return unless @day % DAYS_IN_MONTH == 0
-
+  return unless @day % @days_in_month == 0
+  puts "📅📅📅📅📅📅📅📅📅📅📅📅📅📅📅"
   harvest_wheat
   pay_loan
 end
 
+def highscore_key
+  "highscores_#{@days_in_month}"
+end
+
+def print_high_scores
+  puts "🏆🏆🏆🏆 HIGHSCORES 🏆🏆🏆🏆"
+  highscores = @db.get(highscore_key) || []
+  highscores.each_with_index do |entry, i|
+    puts " #{i + 1} Player: #{entry[:player]}, Score: #{entry[:score]}"
+  end
+end
+
 def check_end_of_game
-  if @day == GAME_LENGTH_IN_DAYS
+  if @day == @game_length_in_days
     puts "Game over! Your final score was #{@money}"
     @running = false
-    highscores = @db.get('highscores') || []
+    highscores = @db.get(highscore_key) || []
 
     puts 'Please enter your name'
 
@@ -350,10 +423,8 @@ def check_end_of_game
 
     highscores << new_entry
     highscores = highscores.sort_by { |entry| entry[:score] }.reverse.first(10)
-    highscores.each_with_index do |entry, i|
-      puts " #{i + 1} Player: #{entry[:player]}, Score: #{entry[:score]}"
-    end
-    @db.set 'highscores', highscores
+    @db.set highscore_key, highscores
+    print_high_scores
   end
 end
 
@@ -361,12 +432,12 @@ def do_end_of_day_things
   @day += 1
 
   do_animal_day_things
-  do_natural_disasters
   calculate_money
   do_monthly_things
   money_check
   feed_animals
   check_end_of_game
+  do_natural_disasters
 end
 
 #
@@ -385,11 +456,11 @@ def do_natural_disasters
 
     if at_risk_chicken
       # do chi
-      puts "🦊👀Oh no, the fox is eying #{at_risk_chicken.name}."
+      puts "🦊👀Oh no, the fox is eying #{at_risk_chicken.name}.🦊👀"
       
       eaten = true if @fence_level == 0
-      eaten = true if (@fence_level == 1) && (random_number <= 25)
-      eaten = true if (@fence_level == 2) && (random_number <= 10)
+      eaten = true if (@fence_level == 1) && (random_number <= 15)
+      eaten = true if (@fence_level == 2) && (random_number <= 8)
 
       if eaten
         puts '🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊🦊'

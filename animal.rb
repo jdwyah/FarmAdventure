@@ -53,9 +53,9 @@ class Animal
 
   def sell_price(today)
     if @type == :pig
-      age(today) * 10
+      age(today) * 15
     else
-      age(today) * 2
+      age(today) * 3
     end 
   end
 

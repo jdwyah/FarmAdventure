@@ -1,25 +1,8 @@
 
-Use the following for highscores
-```
-gem "replitdb", "~> 0.1.0"
-```
+# Welcome To FarmAdventure
 
-```
-require 'sinatra'
-require 'replit'
+The best game in the universe. 
 
-set :protection, :except => :frame_options
-set :bind, '0.0.0.0'
-set :port, 8080
+Will you survive the challenges before you? Will you get a high score? Will you save enough money for a truffle finding pig? Who knows!?
 
-@db = Replit::Database::Client.new
-@db.set('visitors', 0)
 
-get '/' do
-  @db = Replit::Database::Client.new
-  visitors = @db.get('visitors')
-  visitors += 1
-  @db.set('visitors', visitors)
-  "Hello visitor #{visitors}!"
-end
-```
